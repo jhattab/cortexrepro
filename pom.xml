@@ -2,26 +2,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
+        <version>4.0.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>com.example</groupId>
     <artifactId>cortex</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>cortex</name>
     <description>Demo project for Spring Boot</description>
+
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -32,12 +35,32 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.graalvm.buildtools</groupId>
-                <artifactId>native-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>build-image</id>
+                        <goals>
+                            <goal>build-image-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <image>
+                        <network>host</network>
+                        <env>
+                            <SERVICE_BINDING_ROOT>/bindings</SERVICE_BINDING_ROOT>
+                            <BP_NATIVE_IMAGE_BUILD_ARGUMENTS>-march=compatibility -H:+AddAllCharsets</BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
+                        </env>
+                        <bindings>
+                            <binding>${project.basedir}/certifcates:/bindings/ca-certificates</binding>
+                        </bindings>
+                    </image>
+                    <docker>
+                        <host>unix:///run/user/1000/podman/podman.sock</host>
+                        <bindHostToBuilder>true</bindHostToBuilder>
+                    </docker>
+                </configuration>
             </plugin>
         </plugins>
     </build>
